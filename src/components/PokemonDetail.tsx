@@ -13,7 +13,7 @@ const PokemonDetail = () => {
     const { pokemon, isLoading } = usePokemon({ pokemonName })
 
     return (
-        <Container>
+        <Container sx={{backgroundImage: "linear-gradient(#FF0000,#CC0000,#3B4CCA, #FFDE00, #B3A125)"}}>
             <Grid container flexDirection="column" alignItems="center" justifyContent="center" spacing={2} mt={1}>
                 <Grid item container alignItems="center" justifyContent="center" spacing={2}>
                     {isLoading ? (

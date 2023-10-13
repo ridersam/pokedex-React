@@ -1,15 +1,34 @@
 import { useEffect, useState } from "react"
-import { IndexedPokemon, ListPokemon, PokemonListResponse } from "../interfaces/pokemon.interface"
-import { POKEMON_API_POKEMON_URL, POKEMON_IMAGES_BASE_URL } from "../constants"
+import { IndexedPokemon, IndexedType, ListPokemon, PokemonListResponse, PokemonByTypeListResponse } from "../interfaces/pokemon.interface"
+import { POKEMON_API_POKEMON_URL, POKEMON_IMAGES_BASE_URL, POKEMON_TYPES } from "../constants"
 import { httpClient } from "../api/httpClient"
 
 const usePokemons = () => {
     const [pokemons, setPokemons] = useState<ListPokemon[]>([])
     const [nextUrl, setNextUrl] = useState<string | null>(POKEMON_API_POKEMON_URL)
+    const [selectedType, setSelectedType] = useState<IndexedType | null>(null)
 
     useEffect(() => {
-        fetchPokemon()
-    }, [])
+        if (selectedType) {
+            fetchPokemonsByType();
+        } else {
+            fetchPokemon();
+        }
+    }, [selectedType]);
+
+    const fetchPokemonsByType = async () => {
+        if (selectedType) {
+            const result = await httpClient.get<PokemonByTypeListResponse>(
+                (selectedType.url)
+            );
+            if (result?.data?.pokemon) {
+                const listPokemons = result.data.pokemon.map((p) => indexedPokemonToListPokemon(p.pokemon)
+                );
+                setPokemons(listPokemons)
+                setNextUrl(POKEMON_API_POKEMON_URL);
+            }
+        }
+    }
 
     const indexedPokemonToListPokemon = (indexedPokemon: IndexedPokemon) => {
         const pokedexNumber = parseInt(indexedPokemon.url.replace(`${POKEMON_API_POKEMON_URL}/`, "").replace("/", ""))
@@ -32,13 +51,18 @@ const usePokemons = () => {
                 setNextUrl(result.data.next)
             }
         }
-    }
+    };
 
     return {
         pokemons,
         fetchNextPage: fetchPokemon,
-        hasMorePokemon: !!nextUrl
+        hasMorePokemon: !!nextUrl,
+        pokemonTypes: POKEMON_TYPES,
+        selectedType,
+        setSelectedType,
+        setPokemons
     }
 }
+
 
 export default usePokemons
